@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NID Card Pro - Ultimate Edition</title>
+  
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <!-- Cropper.js -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <style>
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --info: #06b6d4;
+      --dark: #1e293b;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+
+    /* App Container */
+    .app-container {
+      max-width: 600px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: white;
+      box-shadow: 0 0 30px rgba(0,0,0,0.1);
+    }
+
+    /* Header */
+    .app-header {
+      background: var(--gradient);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header h2 {
+      font-size: 1.2rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      padding: 10px 15px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+
+    .progress-step.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .progress-step.completed {
+      color: var(--success);
+    }
+
+    .step-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+    }
+
+    .progress-step.active .step-dot {
+      background: var(--gradient);
+      color: white;
+    }
+
+    .progress-step.completed .step-dot {
+      background: var(--success);
+      color: white;
+    }
+
+    .progress-line {
+      height: 3px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-line-fill {
+      height: 100%;
+      background: var(--gradient);
+      transition: width 0.3s ease;
+    }
+
+    /* Steps */
+    .step-content {
+      display: none;
+      padding: 15px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .step-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Step Title */
+    .step-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-title i {
+      color: var(--primary);
+    }
+
+    /* Upload Area */
+    .upload-zone {
+      border: 2px dashed var(--primary);
+      border-radius: 12px;
+      padding: 25px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #f8fafc;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      background: #eff6ff;
+      border-color: var(--secondary);
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    /* Buttons */
+    .btn-primary-gradient {
+      background: var(--gradient);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .btn-primary-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success-gradient {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .btn-success-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-warning-gradient {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .btn-warning-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-outline-secondary {
+      border: 2px solid var(--border);
+      background: white;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 500;
+      width: 100%;
+      color: var(--dark);
+      transition: all 0.3s;
+    }
+
+    /* PDF Preview */
+    .pdf-preview-wrap {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      overflow: auto;
+      max-height: 400px;
+    }
+
+    #pdf-canvas {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+
+    /* Crop Preview */
+    .crop-preview {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .crop-preview img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    /* Customization Panel */
+    .customization-panel {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .customization-panel h6 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .custom-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .custom-label {
+      font-size: 0.8rem;
+      color: #6c757d;
+      min-width: 80px;
+    }
+
+    .custom-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: #e2e8f0;
+      outline: none;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .custom-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--dark);
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .move-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .move-btn {
+      width: 35px;
+      height: 35px;
+      border-radius: 8px;
+      border: none;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+    }
+
+    .move-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Final Canvas */
+    .final-canvas-wrap {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      overflow: auto;
+    }
+
+    #final-canvas {
+      max-width: 100%;
+      border-radius: 8px;
+      background: white;
+    }
+
+    /* Toast */
+    .toast-modern {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      z-index: 9999;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+      min-width: 250px;
+    }
+
+    .toast-modern.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    .toast-success .toast-icon {
+      background: var(--success);
+      color: white;
+    }
+
+    .toast-error .toast-icon {
+      background: var(--danger);
+      color: white;
+    }
+
+    /* Loader */
+    .loader-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader-overlay.show {
+      display: flex;
+    }
+
+    .loader-content {
+      text-align: center;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #e9ecef;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Print - Mobile Fix */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      
+      #final-canvas, #final-canvas * {
+        visibility: visible;
+      }
+      
+      #final-canvas {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .app-container {
+        max-width: 100%;
+      }
+      
+      .custom-row {
+        flex-wrap: wrap;
+      }
+      
+      .custom-label {
+        min-width: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Header -->
+    <div class="app-header">
+      <h2>
+        <i class="fas fa-id-card-alt"></i>
+        NID Card Pro
+      </h2>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-steps">
+        <div class="progress-step active" id="stepIndicator1">
+          <span class="step-dot">1</span>
+          <span>আপলোড</span>
+        </div>
+        <div class="progress-step" id="stepIndicator2">
+          <span class="step-dot">2</span>
+          <span>ক্রপ</span>
+        </div>
+        <div class="progress-step" id="stepIndicator3">
+          <span class="step-dot">3</span>
+          <span>কাস্টমাইজ</span>
+        </div>
+        <div class="progress-step" id="stepIndicator4">
+          <span class="step-dot">4</span>
+          <span>ডাউনলোড</span>
+        </div>
+      </div>
+      <div class="progress-line">
+        <div class="progress-line-fill" id="progressLine" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Step 1: Upload -->
+    <div class="step-content active" id="step1">
+      <div class="step-title">
+        <i class="fas fa-cloud-upload-alt"></i>
+        ধাপ ১: ফাইল আপলোড করুন
+      </div>
+      
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <h6>ক্লিক করুন অথবা ড্র্যাগ করুন</h6>
+        <p class="text-muted small">PDF, JPG, PNG সাপোর্টেড</p>
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp" class="d-none">
+      </div>
+      
+      <div id="uploadStatus" class="text-center mt-3 d-none">
+        <div class="spinner-border spinner-border-sm text-primary"></div>
+        <small class="text-muted">লোড হচ্ছে...</small>
+      </div>
+    </div>
+
+    <!-- Step 2: Crop -->
+    <div class="step-content" id="step2">
+      <div class="step-title">
+        <i class="fas fa-crop-alt"></i>
+        ধাপ ২: ক্রপ করুন
+      </div>
+      
+      <div class="pdf-preview-wrap">
+        <canvas id="pdf-canvas" class="img-fluid"></canvas>
+      </div>
+      
+      <div class="d-grid gap-2 mt-3">
+        <button class="btn btn-primary-gradient" onclick="cropImage('front')">
+          <i class="fas fa-id-card me-2"></i>
+          ফ্রন্ট ক্রপ করুন
+        </button>
+        <button class="btn btn-warning-gradient" onclick="cropImage('back')">
+          <i class="fas fa-id-card me-2"></i>
+          ব্যাক ক্রপ করুন
+        </button>
+      </div>
+      
+      <div class="crop-preview mt-3">
+        <small class="text-muted">ফ্রন্ট প্রিভিউ</small>
+        <img id="cropped-front" alt="Front" style="display:none;" />
+      </div>
+      
+      <div class="crop-preview mt-2">
+        <small class="text-muted">ব্যাক প্রিভিউ</small>
+        <img id="cropped-back" alt="Back" style="display:none;" />
+      </div>
+      
+      <button class="btn btn-success-gradient mt-3" onclick="goToStep3()">
+        পরের ধাপে যান <i class="fas fa-arrow-right ms-2"></i>
+      </button>
+    </div>
+
+    <!-- Step 3: Customize & Place -->
+    <div class="step-content" id="step3">
+      <div class="step-title">
+        <i class="fas fa-sliders-h"></i>
+        ধাপ ৩: কাস্টমাইজ ও প্লেস করুন
+      </div>
+      
+      <!-- Paper Size -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">পেপার সাইজ</label>
+        <select class="form-select" id="paperSize">
+          <option value="A4">A4 (210×297mm)</option>
+          <option value="4x6">4×6 ইঞ্চি</option>
+          <option value="PVC">PVC কার্ড (85.6×54mm)</option>
+        </select>
+      </div>
+      
+      <!-- Both Cards Together -->
+      <div class="customization-panel">
+        <h6><i class="fas fa-object-group me-2 text-primary"></i> দুই কার্ড একসাথে</h6>
+        
+        <div class="custom-row">
+          <span class="custom-label">সাইজ</span>
+          <input type="range" class="custom-slider" id="bothSize" min="50" max="100" value="100" oninput="updateBothCustomization()">
+          <span class="custom-value" id="bothSizeVal">100%</span>
+        </div>
+        
+        <div class="custom-row">
+          <span class="custom-label">অপাসিটি</span>
+          <input type="range" class="custom-slider" id="bothOpacity" min="50" max="100" value="100" oninput="updateBothCustomization()">
+          <span class="custom-value" id="bothOpacityVal">100%</span>
+        </div>
+        
+        <div class="custom-row">
+          <span class="custom-label">পজিশন</span>
+          <div class="move-buttons">
+            <button class="move-btn" onclick="moveBoth('up')"><i class="fas fa-arrow-up"></i></button>
+            <button class="move-btn" onclick="moveBoth('down')"><i class="fas fa-arrow-down"></i></button>
+            <button class="move-btn" onclick="moveBoth('left')"><i class="fas fa-arrow-left"></i></button>
+            <button class="move-btn" onclick="moveBoth('right')"><i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Card 1 Customization -->
+      <div class="customization-panel">
+        <h6><i class="fas fa-id-card me-2 text-primary"></i> কার্ড ১ (ফ্রন্ট)</h6>
+        
+        <div class="custom-row">
+          <span class="custom-label">সাইজ</span>
+          <input type="range" class="custom-slider" id="card1Size" min="50" max="100" value="100" oninput="updateCustomization()">
+          <span class="custom-value" id="card1SizeVal">100%</span>
+        </div>
+        
+        <div class="custom-row">
+          <span class="custom-label">অপাসিটি</span>
+          <input type="range" class="custom-slider" id="card1Opacity" min="50" max="100" value="100" oninput="updateCustomization()">
+          <span class="custom-value" id="card1OpacityVal">100%</span>
+        </div>
+        
+        <div class="custom-row">
+          <span class="custom-label">পজিশন</span>
+          <div class="move-buttons">
+            <button class="move-btn" onclick="moveCard(1, 'up')"><i class="fas fa-arrow-up"></i></button>
+            <button class="move-btn" onclick="moveCard(1, 'down')"><i class="fas fa-arrow-down"></i></button>
+            <button class="move-btn" onclick="moveCard(1, 'left')"><i class="fas fa-arrow-left"></i></button>
+            <button class="move-btn" onclick="moveCard(1, 'right')"><i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Card 2 Customization -->
+      <div class="customization-panel">
+        <h6><i class="fas fa-id-card me-2 text-warning"></i> কার্ড ২ (ব্যাক)</h6>
+        
+        <div class="custom-row">
+          <span class="custom-label">সাইজ</span>
+          <input type="range" class="custom-slider" id="card2Size" min="50" max="100" value="100" oninput="updateCustomization()">
+          <span class="custom-value" id="card2SizeVal">100%</span>
+        </div>
+        
+        <div class="custom-row">
+          <span class="custom-label">অপাসিটি</span>
+          <input type="range" class="custom-slider" id="card2Opacity" min="50" max="100" value="100" oninput="updateCustomization()">
+          <span class="custom-value" id="card2OpacityVal">100%</span>
+        </div>
+        
+        <div class="custom-row">
+          <span class="custom-label">পজিশন</span>
+          <div class="move-buttons">
+            <button class="move-btn" onclick="moveCard(2, 'up')"><i class="fas fa-arrow-up"></i></button>
+            <button class="move-btn" onclick="moveCard(2, 'down')"><i class="fas fa-arrow-down"></i></button>
+            <button class="move-btn" onclick="moveCard(2, 'left')"><i class="fas fa-arrow-left"></i></button>
+            <button class="move-btn" onclick="moveCard(2, 'right')"><i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Final Canvas Preview -->
+      <div class="final-canvas-wrap mt-3">
+        <canvas id="final-canvas" width="794" height="1123"></canvas>
+      </div>
+      
+      <button class="btn btn-primary-gradient mt-3" onclick="placeCards()">
+        <i class="fas fa-th-large me-2"></i>
+        কার্ড প্লেস করুন
+      </button>
+      
+      <button class="btn btn-success-gradient mt-2" onclick="goToStep4()">
+        পরের ধাপে যান <i class="fas fa-arrow-right ms-2"></i>
+      </button>
+    </div>
+
+    <!-- Step 4: Download & Print -->
+    <div class="step-content" id="step4">
+      <div class="step-title">
+        <i class="fas fa-download"></i>
+        ধাপ ৪: ডাউনলোড ও প্রিন্ট
+      </div>
+      
+      <div class="d-grid gap-3">
+        <button class="btn btn-success-gradient" onclick="printCard()">
+          <i class="fas fa-print me-2"></i>
+          প্রিন্ট করুন
+        </button>
+        
+        <button class="btn btn-primary-gradient" onclick="downloadAs('png')">
+          <i class="fas fa-file-image me-2"></i>
+          PNG ডাউনলোড (HD)
+        </button>
+        
+        <button class="btn btn-primary-gradient" onclick="downloadAs('pdf')">
+          <i class="fas fa-file-pdf me-2"></i>
+          PDF ডাউনলোড (HD)
+        </button>
+      </div>
+      
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-secondary" onclick="resetAll()">
+          <i class="fas fa-redo me-2"></i>
+          নতুন করে শুরু করুন
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-modern" id="toast">
+    <div class="toast-icon" id="toastIcon">
+      <i class="fas fa-check"></i>
+    </div>
+    <span id="toastMessage"></span>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <h5>প্রসেস হচ্ছে...</h5>
+      <p class="text-muted">অনুগ্রহ করে অপেক্ষা করুন</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // PDF.js Worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // Global Variables
+    let pdfDoc = null;
+    let page = null;
+    let cropper = null;
+    let pdfCanvas = document.getElementById('pdf-canvas');
+    let ctx = pdfCanvas.getContext('2d');
+    let frontData = null;
+    let backData = null;
+    let currentStep = 1;
+    
+    // Customization
+    let card1Settings = { x: 0, y: 0, scale: 1, opacity: 1 };
+    let card2Settings = { x: 0, y: 0, scale: 1, opacity: 1 };
+    let bothSettings = { x: 0, y: 0, scale: 1, opacity: 1 };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      setupDragAndDrop();
+      setupFileInput();
+      initProgress();
+      
+      // Prevent long press on cropper
+      preventLongPress();
+    });
+
+    // Prevent Long Press on Cropper
+    function preventLongPress() {
+      // Prevent context menu
+      document.addEventListener('contextmenu', function(e) {
+        if (e.target.tagName === 'CANVAS' || e.target.closest('.cropper-container')) {
+          e.preventDefault();
+        }
+      });
+      
+      // Prevent long press on mobile
+      document.addEventListener('touchstart', function(e) {
+        if (e.target.tagName === 'CANVAS' || e.target.closest('.cropper-container')) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
+
+    // Progress Bar Init
+    function initProgress() {
+      updateProgress(1);
+    }
+
+    function updateProgress(step) {
+      currentStep = step;
+      
+      for (let i = 1; i <= 4; i++) {
+        const indicator = document.getElementById(`stepIndicator${i}`);
+        indicator.classList.remove('active', 'completed');
+        
+        if (i < step) {
+          indicator.classList.add('completed');
+          indicator.querySelector('.step-dot').innerHTML = '<i class="fas fa-check"></i>';
+        } else if (i === step) {
+          indicator.classList.add('active');
+          indicator.querySelector('.step-dot').textContent = i;
+        } else {
+          indicator.querySelector('.step-dot').textContent = i;
+        }
+      }
+      
+      const progressLine = document.getElementById('progressLine');
+      progressLine.style.width = `${(step - 1) * 33.33}%`;
+      
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`step${i}`).classList.toggle('active', i === step);
+      }
+    }
+
+    // File Input Setup
+    function setupFileInput() {
+      document.getElementById('fileInput').addEventListener('change', function(e) {
+        handleFile(this.files[0]);
+      });
+    }
+
+    // Drag and Drop
+    function setupDragAndDrop() {
+      const uploadZone = document.getElementById('uploadZone');
+      
+      uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+      });
+      
+      uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+      });
+      
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleFile(e.dataTransfer.files[0]);
+      });
+    }
+
+    // Handle File
+    async function handleFile(file) {
+      if (!file) return;
+      
+      document.getElementById('uploadStatus').classList.remove('d-none');
+      
+      if (file.type === 'application/pdf') {
+        await loadPDF(file);
+      } else if (file.type.startsWith('image/')) {
+        await loadImage(file);
+      } else {
+        showToast('অবৈধ ফাইল!', 'error');
+      }
+      
+      document.getElementById('uploadStatus').classList.add('d-none');
+    }
+
+    // Load PDF
+    async function loadPDF(file) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        pdfDoc = pdf;
+        
+        await renderPage(1);
+        setupCropper();
+        updateProgress(2);
+        showToast('PDF লোড সফল!', 'success');
+      } catch (error) {
+        showToast('PDF লোডে সমস্যা!', 'error');
+      }
+    }
+
+    // Render PDF Page
+    async function renderPage(pageNum) {
+      const page = await pdfDoc.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2 });
+      
+      pdfCanvas.width = viewport.width;
+      pdfCanvas.height = viewport.height;
+      
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise;
+    }
+
+    // Load Image
+    function loadImage(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          pdfCanvas.width = img.width;
+          pdfCanvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          setupCropper();
+          updateProgress(2);
+          showToast('ইমেজ লোড সফল!', 'success');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Setup Cropper
+    function setupCropper() {
+      if (cropper) {
+        cropper.destroy();
+      }
+      
+      cropper = new Cropper(pdfCanvas, {
+        aspectRatio: 1.6,
+        viewMode: 1,
+        zoomable: true,
+        scalable: true,
+        movable: true,
+        dragMode: 'crop',
+        background: false,
+        autoCropArea: 0.8
+      });
+    }
+
+    // Crop Image
+    function cropImage(side) {
+      if (!cropper) {
+        showToast('আগে ফাইল লোড করুন!', 'warning');
+        return;
+      }
+      
+      const canvas = cropper.getCroppedCanvas({
+        width: 600,
+        height: 375,
+        fillColor: '#fff'
+      });
+      
+      if (side === 'front') {
+        const frontImg = document.getElementById('cropped-front');
+        frontImg.src = canvas.toDataURL();
+        frontImg.style.display = 'block';
+        frontData = canvas;
+        showToast('ফ্রন্ট ক্রপ সফল!', 'success');
+      } else {
+        const backImg = document.getElementById('cropped-back');
+        backImg.src = canvas.toDataURL();
+        backImg.style.display = 'block';
+        backData = canvas;
+        showToast('ব্যাক ক্রপ সফল!', 'success');
+      }
+    }
+
+    // Go to Step 3
+    function goToStep3() {
+      if (!frontData && !backData) {
+        showToast('অনুগ্রহ করে ক্রপ করুন!', 'warning');
+        return;
+      }
+      updateProgress(3);
+      placeCards();
+    }
+
+    // Move Both Cards
+    function moveBoth(direction) {
+      switch(direction) {
+        case 'up': bothSettings.y -= 10; break;
+        case 'down': bothSettings.y += 10; break;
+        case 'left': bothSettings.x -= 10; break;
+        case 'right': bothSettings.x += 10; break;
+      }
+      placeCards();
+    }
+
+    // Update Both Customization
+    function updateBothCustomization() {
+      bothSettings.scale = document.getElementById('bothSize').value / 100;
+      bothSettings.opacity = document.getElementById('bothOpacity').value / 100;
+      
+      document.getElementById('bothSizeVal').textContent = document.getElementById('bothSize').value + '%';
+      document.getElementById('bothOpacityVal').textContent = document.getElementById('bothOpacity').value + '%';
+      
+      card1Settings.scale = bothSettings.scale;
+      card2Settings.scale = bothSettings.scale;
+      card1Settings.opacity = bothSettings.opacity;
+      card2Settings.opacity = bothSettings.opacity;
+      
+      document.getElementById('card1Size').value = document.getElementById('bothSize').value;
+      document.getElementById('card1Opacity').value = document.getElementById('bothOpacity').value;
+      document.getElementById('card2Size').value = document.getElementById('bothSize').value;
+      document.getElementById('card2Opacity').value = document.getElementById('bothOpacity').value;
+      
+      document.getElementById('card1SizeVal').textContent = document.getElementById('bothSize').value + '%';
+      document.getElementById('card1OpacityVal').textContent = document.getElementById('bothOpacity').value + '%';
+      document.getElementById('card2SizeVal').textContent = document.getElementById('bothSize').value + '%';
+      document.getElementById('card2OpacityVal').textContent = document.getElementById('bothOpacity').value + '%';
+      
+      placeCards();
+    }
+
+    // Move Card
+    function moveCard(cardNum, direction) {
+      const settings = cardNum === 1 ? card1Settings : card2Settings;
+      
+      switch(direction) {
+        case 'up': settings.y -= 10; break;
+        case 'down': settings.y += 10; break;
+        case 'left': settings.x -= 10; break;
+        case 'right': settings.x += 10; break;
+      }
+      
+      placeCards();
+    }
+
+    // Update Customization
+    function updateCustomization() {
+      card1Settings.scale = document.getElementById('card1Size').value / 100;
+      card1Settings.opacity = document.getElementById('card1Opacity').value / 100;
+      card2Settings.scale = document.getElementById('card2Size').value / 100;
+      card2Settings.opacity = document.getElementById('card2Opacity').value / 100;
+      
+      document.getElementById('card1SizeVal').textContent = document.getElementById('card1Size').value + '%';
+      document.getElementById('card1OpacityVal').textContent = document.getElementById('card1Opacity').value + '%';
+      document.getElementById('card2SizeVal').textContent = document.getElementById('card2Size').value + '%';
+      document.getElementById('card2OpacityVal').textContent = document.getElementById('card2Opacity').value + '%';
+      
+      placeCards();
+    }
+
+    // Place Cards
+    function placeCards() {
+      const paper = document.getElementById('paperSize').value;
+      let width = 794, height = 1123;
+      
+      if (paper === '4x6') {
+        width = 600;
+        height = 900;
+      } else if (paper === 'PVC') {
+        width = 300;
+        height = 200;
+      }
+      
+      const canvas = document.getElementById('final-canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, width, height);
+      
+      const cardW = 300;
+      const cardH = 180;
+      const gap = 38;
+      
+      // Card 1
+      if (frontData) {
+        ctx.save();
+        ctx.globalAlpha = card1Settings.opacity * bothSettings.opacity;
+        const cw = cardW * card1Settings.scale * bothSettings.scale;
+        const ch = cardH * card1Settings.scale * bothSettings.scale;
+        const cx = (width - cw) / 2 + card1Settings.x + bothSettings.x;
+        const cy = 100 + card1Settings.y + bothSettings.y;
+        ctx.drawImage(frontData, cx, cy, cw, ch);
+        ctx.restore();
+      }
+      
+      // Card 2
+      if (backData) {
+        ctx.save();
+        ctx.globalAlpha = card2Settings.opacity * bothSettings.opacity;
+        const cw = cardW * card2Settings.scale * bothSettings.scale;
+        const ch = cardH * card2Settings.scale * bothSettings.scale;
+        const cx = (width - cw) / 2 + card2Settings.x + bothSettings.x;
+        const cy = 100 + cardH + gap + card2Settings.y + bothSettings.y;
+        ctx.drawImage(backData, cx, cy, cw, ch);
+        ctx.restore();
+      }
+      
+      showToast('কার্ড প্লেস সম্পন্ন!', 'success');
+    }
+
+    // Go to Step 4
+    function goToStep4() {
+      placeCards();
+      updateProgress(4);
+    }
+
+    // Print
+    function printCard() {
+      const canvas = document.getElementById('final-canvas');
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // Create print window
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>Print Card</title>
+          <style>
+            @page { size: A4; margin: 0; }
+            body { margin: 0; padding: 0; }
+            img { width: 100%; height: auto; display: block; }
+          </style>
+        </head>
+        <body>
+          <img src="${dataUrl}" onload="window.print(); window.close();">
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    // Download HD (300 DPI)
+    function downloadAs(format) {
+      const canvas = document.getElementById('final-canvas');
+      
+      // HD output at 300 DPI (3x)
+      const hdCanvas = document.createElement('canvas');
+      hdCanvas.width = canvas.width * 3;
+      hdCanvas.height = canvas.height * 3;
+      const hdCtx = hdCanvas.getContext('2d');
+      
+      // White background
+      hdCtx.fillStyle = '#ffffff';
+      hdCtx.fillRect(0, 0, hdCanvas.width, hdCanvas.height);
+      
+      // Draw cards at 3x scale
+      const scale = 3;
+      
+      // Card 1
+      if (frontData) {
+        const cardW = 300 * scale * card1Settings.scale * bothSettings.scale;
+        const cardH = 180 * scale * card1Settings.scale * bothSettings.scale;
+        const cx = (hdCanvas.width - cardW) / 2 + (card1Settings.x + bothSettings.x) * scale;
+        const cy = 100 * scale + (card1Settings.y + bothSettings.y) * scale;
+        hdCtx.globalAlpha = card1Settings.opacity * bothSettings.opacity;
+        hdCtx.drawImage(frontData, cx, cy, cardW, cardH);
+      }
+      
+      // Card 2
+      if (backData) {
+        const cardW = 300 * scale * card2Settings.scale * bothSettings.scale;
+        const cardH = 180 * scale * card2Settings.scale * bothSettings.scale;
+        const cx = (hdCanvas.width - cardW) / 2 + (card2Settings.x + bothSettings.x) * scale;
+        const cy = (100 + 180 + 38) * scale + (card2Settings.y + bothSettings.y) * scale;
+        hdCtx.globalAlpha = card2Settings.opacity * bothSettings.opacity;
+        hdCtx.drawImage(backData, cx, cy, cardW, cardH);
+      }
+      
+      if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        const imgData = hdCanvas.toDataURL('image/jpeg', 0.95);
+        doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+        doc.save('nid-cards.pdf');
+      } else {
+        const link = document.createElement('a');
+        link.download = `nid-cards.${format}`;
+        link.href = hdCanvas.toDataURL(`image/${format}`, 1.0);
+        link.click();
+      }
+      
+      showToast('HD ডাউনলোড সফল!', 'success');
+    }
+
+    // Reset All
+    function resetAll() {
+      frontData = null;
+      backData = null;
+      cropper = null;
+      pdfDoc = null;
+      
+      document.getElementById('fileInput').value = '';
+      document.getElementById('cropped-front').src = '';
+      document.getElementById('cropped-front').style.display = 'none';
+      document.getElementById('cropped-back').src = '';
+      document.getElementById('cropped-back').style.display = 'none';
+      
+      card1Settings = { x: 0, y: 0, scale: 1, opacity: 1 };
+      card2Settings = { x: 0, y: 0, scale: 1, opacity: 1 };
+      bothSettings = { x: 0, y: 0, scale: 1, opacity: 1 };
+      
+      document.getElementById('card1Size').value = 100;
+      document.getElementById('card1Opacity').value = 100;
+      document.getElementById('card2Size').value = 100;
+      document.getElementById('card2Opacity').value = 100;
+      document.getElementById('bothSize').value = 100;
+      document.getElementById('bothOpacity').value = 100;
+      
+      const canvas = document.getElementById('final-canvas');
+      canvas.width = 794;
+      canvas.height = 1123;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, 794, 1123);
+      
+      updateProgress(1);
+      showToast('সব রিসেট হয়েছে!', 'success');
+    }
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toastMessage.textContent = message;
+      
+      if (type === 'success') {
+        toast.className = 'toast-modern';
+        toastIcon.className = 'toast-icon';
+        toastIcon.innerHTML = '<i class="fas fa-check"></i>';
+        toastIcon.style.background = 'var(--success)';
+      } else if (type === 'error') {
+        toast.className = 'toast-modern';
+        toastIcon.className = 'toast-icon';
+        toastIcon.innerHTML = '<i class="fas fa-times"></i>';
+        toastIcon.style.background = 'var(--danger)';
+      } else {
+        toast.className = 'toast-modern';
+        toastIcon.className = 'toast-icon';
+        toastIcon.innerHTML = '<i class="fas fa-exclamation"></i>';
+        toastIcon.style.background = 'var(--warning)';
+      }
+      
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>
